@@ -8,10 +8,17 @@ It is the implementation of DES (only for learning purposes). DES (Data Encrypti
 
 ```bash
 # make
-# ./des message key
+```
+For encryption
+```bash
+# ./des -e message key
+```
+For decryption
+```bash
+# ./des -d message key
 ```
 
-Please enter exact 64 bits message and key.
+Please enter exact 64 bit key.
 
 ## Author
 

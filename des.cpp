@@ -1,10 +1,11 @@
 /*
-    Purpose                 : Implementing DES
+    Purpose                 : Implementing DES (Only for learning purposes)
 
     Input                   : 64 bits of plaintext message in ascii
                               64 bits of plaintext key in ascii
     Output                  : 64 bits of base64 cipher 
                               64 bits of plaintex message in ascci recovered
+    Author                  : Tushar Sharma
  */
 #include <iostream>
 #include <cstring> 
@@ -616,31 +617,34 @@ int main(int argc, char **argv)
     memset (msg, '\0', 12);  
     memset (msg_ascii, '\0', 8); 
 
-    if (argc != 3) 
+    if (argc != 4) 
     {
-        cout<<"Incorrect input\n";
-        exit(0);
+        cout<<"Incorrect input arguments\nUsage ./des <-e/-d> <message> <key>\n";
+        exit(-1);
     }
   
     else 
     {
-        cout<<"\nEncryption\n";
-        des (argv[1], strlen (argv[1]), argv[2], strlen(argv[2]), cipher, 0);                             //Passing message and key as arguments      
-        cout<<"Cipher in base64\n";
-        for (size_t i = 0; i < strlen(cipher); i++) {
-           cout<<cipher[i]; }
-   
-        cout<<"\n\nDecryption\n"; 
-        des (cipher, strlen (cipher), argv[2], strlen (argv[2]), msg, 1);
+        if (strcmp(argv[1], "-e") == 0) {
+            cout<<"\nEncryption\n";
+            des (argv[2], strlen (argv[2]), argv[3], strlen(argv[3]), cipher, 0);                             //Passing message and key as arguments      
+            cout<<"Cipher in base64\n";
+            for (size_t i = 0; i < strlen(cipher); i++) {
+               cout<<cipher[i]; }
+        }
 
+	else  {
+            cout<<"Decryption\n"; 
+	    des(argv[2], strlen(argv[2]), argv[3], strlen(argv[3]), msg, 1);
+            //des (cipher, strlen (cipher), argv[3], strlen (argv[3]), msg, 1);
 
-       size_t i = 0;
-       int cur, prev, digitsum;
+            size_t i = 0;
+            int cur, prev, digitsum;
 
-       while ( i < strlen (msg)) {
-            cur =  B64 (msg [i]);
+            while ( i < strlen (msg)) {
+                cur =  B64 (msg [i]);
 
-            if (cur != -1) {
+                if (cur != -1) {
                 digitsum = i % 4;
 
                 switch (digitsum)
@@ -664,17 +668,18 @@ int main(int argc, char **argv)
             ++i;
           }
 
-          int index = 0;
+              int index = 0;
 
-          for (size_t i = 0; i < 12; i++) {
-             if (arr1[i] != 0) {
-                  msg_ascii[index++] = (char) arr1[i];
-             }
-          }
-        cout<<"\nDecrypted Message\n";    
-        for (size_t i = 0; i < strlen(msg_ascii); i++) {
-            cout<<msg_ascii[i];
-        }
+              for (size_t i = 0; i < 12; i++) {
+                  if (arr1[i] != 0) {
+                      msg_ascii[index++] = (char) arr1[i];
+                  }
+              }
+            cout<<"\nDecrypted Message\n";    
+            for (size_t i = 0; i < strlen(msg_ascii); i++) {
+                cout<<msg_ascii[i];
+            }
+	}
     }
 
     cout<<endl;
