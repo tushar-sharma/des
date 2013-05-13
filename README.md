@@ -18,7 +18,7 @@ For decryption
 # ./des -d message key
 ```
 
-Please enter exact 64 bit key.
+Please enter exact 64 bits key. Message greater than 64 bits is yet not supported.
 
 ## Author
 
