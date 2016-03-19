@@ -2,4 +2,4 @@ CC=g++
 CFLAGS=-I.
 
 all:
-	g++ des.cpp -o des
+	g++ -I Lib/ src/des.cpp -o bin/des

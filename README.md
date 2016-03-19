@@ -11,11 +11,11 @@ It is the implementation of DES (only for learning purposes). DES (Data Encrypti
 ```
 For encryption
 ```bash
-# ./des -e message key
+# ./bin/des -e message key
 ```
 For decryption
 ```bash
-# ./des -d message key
+# ./bin/des -d message key
 ```
 
 Please enter exact 64 bits key. 

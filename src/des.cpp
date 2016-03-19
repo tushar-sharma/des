@@ -10,89 +10,29 @@
 #include <iostream>
 #include <cstring> 
 #include <cstdlib> 
+#include "des.h"
 using namespace std;
 
-#define B64(_)					\
-  ((_) == 'A' ? 0				\
-   : (_) == 'B' ? 1				\
-   : (_) == 'C' ? 2				\
-   : (_) == 'D' ? 3				\
-   : (_) == 'E' ? 4				\
-   : (_) == 'F' ? 5				\
-   : (_) == 'G' ? 6				\
-   : (_) == 'H' ? 7				\
-   : (_) == 'I' ? 8				\
-   : (_) == 'J' ? 9				\
-   : (_) == 'K' ? 10				\
-   : (_) == 'L' ? 11				\
-   : (_) == 'M' ? 12				\
-   : (_) == 'N' ? 13				\
-   : (_) == 'O' ? 14				\
-   : (_) == 'P' ? 15				\
-   : (_) == 'Q' ? 16				\
-   : (_) == 'R' ? 17				\
-   : (_) == 'S' ? 18				\
-   : (_) == 'T' ? 19				\
-   : (_) == 'U' ? 20				\
-   : (_) == 'V' ? 21				\
-   : (_) == 'W' ? 22				\
-   : (_) == 'X' ? 23				\
-   : (_) == 'Y' ? 24				\
-   : (_) == 'Z' ? 25				\
-   : (_) == 'a' ? 26				\
-   : (_) == 'b' ? 27				\
-   : (_) == 'c' ? 28				\
-   : (_) == 'd' ? 29				\
-   : (_) == 'e' ? 30				\
-   : (_) == 'f' ? 31				\
-   : (_) == 'g' ? 32				\
-   : (_) == 'h' ? 33				\
-   : (_) == 'i' ? 34				\
-   : (_) == 'j' ? 35				\
-   : (_) == 'k' ? 36				\
-   : (_) == 'l' ? 37				\
-   : (_) == 'm' ? 38				\
-   : (_) == 'n' ? 39				\
-   : (_) == 'o' ? 40				\
-   : (_) == 'p' ? 41				\
-   : (_) == 'q' ? 42				\
-   : (_) == 'r' ? 43				\
-   : (_) == 's' ? 44				\
-   : (_) == 't' ? 45				\
-   : (_) == 'u' ? 46				\
-   : (_) == 'v' ? 47				\
-   : (_) == 'w' ? 48				\
-   : (_) == 'x' ? 49				\
-   : (_) == 'y' ? 50				\
-   : (_) == 'z' ? 51				\
-   : (_) == '0' ? 52				\
-   : (_) == '1' ? 53				\
-   : (_) == '2' ? 54				\
-   : (_) == '3' ? 55				\
-   : (_) == '4' ? 56				\
-   : (_) == '5' ? 57				\
-   : (_) == '6' ? 58				\
-   : (_) == '7' ? 59				\
-   : (_) == '8' ? 60				\
-   : (_) == '9' ? 61				\
-   : (_) == '+' ? 62				\
-   : (_) == '/' ? 63				\
-   : -1)
-
-
+/*
+ * Function to reverse an generic array of bytes 
+ */
 template <class T>
 void reverse(T arrayString[], size_t len)                        //Reverse generic array
 {
     for (int i = 0; i < (len) / 2; i++) {
-        //swapping values
+        //swapping values without using temporary variable
         arrayString[i] ^= arrayString[len -i -1];                // a = a xor b
         arrayString[len -i -1] ^= arrayString[i];                // b = a xor b
         arrayString[i] ^= arrayString[len -i -1];                // a = a xor b
     }
 }
 
+/* 
+ * Function to convert ASCII to base64
+ */
 void btob64 (const int *ip, int len, char *str)
 {
+    //Hardcoded base64 base characters 
     char base64s[] =  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
    
     int factor = 32, num = 0, index = 0, arr[12] = {0}; 
@@ -111,21 +51,27 @@ void btob64 (const int *ip, int len, char *str)
     }
 
    arr[index] = num;
-
+ 
+  //Map the ASCII array to base64
   for (size_t i = 0; i < 11; i++) {
        str[i] = base64s[arr[i]];
        index = i;
    }
 
+   //Append extra '=' at the last of the string
    int pad = 6 - (64 % 6);
 
    while (pad > 1) {
        str[++index] = '=';
        pad = pad / 2;
    }
-
 }
 
+/* 
+ * Use the s-box to encode the message string
+ * The message needs to be broken into chunks and passed  
+ * to fiestel function which XORs the keys with the message chunk
+ */
 void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag)   //Generates cipher text 
 {
     int factor = 128;
@@ -207,9 +153,10 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
     int l[17][32] = {0};                                                 //Ln
     int r[17][32] = {0};                                                 //Rn
     int f[32] = {0}, f_new[32] = {0},  extra = 0, mark, count ;
- 
+
+    //Calculating IP 
     index = 0;
-    for (int i = 0; i < 8; i++) {                                        //creating ip
+    for (int i = 0; i < 8; i++) {            
         for (int j = 0; j < 8; j++) {
             ipptr[index++] = bmsgptr[IP[i][j] - 1];
         }
@@ -227,7 +174,7 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
         r[0][i - 32] = ipptr[i]; 
     } 
    
-/****************/
+    /****************/
     for (int i = 1; i < 17; i++) { 
         for (int j = 0; j < 32; j++) {
             l[i][j] = r[i - 1][j];
@@ -242,7 +189,7 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
             }
         }
 
-        //calculate er =  er xor kn
+        //calculate er = er xor kn
         if (flag == 0) {
             for (int j = 0; j < 48; j++) {
                 er[j] ^= key[i-1][j];
@@ -255,7 +202,6 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
 
         }
   
-        
         //index1 = 0;
         row = 0, col = 0; 
         mark = 0; 
@@ -300,7 +246,7 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
     for (int j = 0; j < 32; j++) {
         r[i][j] = l[i - 1][j] ^ f_new[j];
     }
-} // for 16 times
+} // This function run for 16 times
 
     for (int i = 0; i < 32; i++) {
         rlsum[i] = r[16][i];
@@ -329,6 +275,9 @@ void encode (const int *bmsgptr, int *ipptr, int key[][48], char *cmsg, int flag
 } // encode function ends
 
 
+/* 
+ * We need to generate sixteen keys to encrypt message chunk sixteeen times
+ */
 void cal_keys_e (const int *ptr, size_t len, int keys[][48])                  //Generate sixteen 48 bits key
 {
 
@@ -405,6 +354,10 @@ void cal_keys_e (const int *ptr, size_t len, int keys[][48])                  //
 
 } //function ends
 
+/* 
+ * Used to generate 48 bits keys which would be XOred with the expanded right 
+ * block of the message
+ */
 void cal_keys_d (const int *ptr, size_t len, int keys[][48])                   //Generate sixteen 48 bits key
 {
     int right_shift[] = {0, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
@@ -483,7 +436,10 @@ void cal_keys_d (const int *ptr, size_t len, int keys[][48])                   /
 
 } //function ends
 
-
+/* 
+ * The original message is 56 bits. This function reduces the keys
+ * block to 56 bits.
+ */
 void reduce_to_56 (const int *ptrKey, int *ptrKeyr)                            //reduce 64 bit key to 56 bit
 {
 int PC1[8][7] = {     {57, 49, 41, 33, 25, 17, 9},
@@ -504,7 +460,9 @@ int index = 0;
     }
 }
 
-
+/* 
+ * Main DES function 
+ */
 void des (char msg[], int mlen, char key[], int klen, char *c, int flag) 
 {
     int bmsg[64] = {0};                                                                            //Message in binary 64 bits
@@ -560,7 +518,6 @@ void des (char msg[], int mlen, char key[], int klen, char *c, int flag)
 
         index = 0;  
         for (size_t i = 0; i < 12; i++) {
-            bit_index; 
             if (arr1[i] != 0) {
                 for (bit_index = 7; bit_index >= 0; --bit_index) {
                    bmsg[index++] = (arr1[i] >> bit_index ) & 1; 
@@ -607,6 +564,9 @@ void des (char msg[], int mlen, char key[], int klen, char *c, int flag)
     encode (bmsg, ip, keys, c, flag);                                                                  //function call
 }
 
+/* 
+ * Get the Message and Keys from the user from command line
+ */
 int main(int argc, char **argv) 
 {
 
@@ -668,18 +628,18 @@ int main(int argc, char **argv)
             ++i;
           }
 
-              int index = 0;
+          int index = 0;
 
-              for (size_t i = 0; i < 12; i++) {
-                  if (arr1[i] != 0) {
-                      msg_ascii[index++] = (char) arr1[i];
-                  }
+          for (size_t i = 0; i < 12; i++) {
+              if (arr1[i] != 0) {
+                  msg_ascii[index++] = (char) arr1[i];
               }
-            cout<<"\nDecrypted Message\n";    
-            for (size_t i = 0; i < strlen(msg_ascii); i++) {
-                cout<<msg_ascii[i];
-            }
-	}
+          }
+          cout<<"\nDecrypted Message\n";    
+          for (size_t i = 0; i < strlen(msg_ascii); i++) {
+              cout<<msg_ascii[i];
+          }
+ 	}
     }
 
     cout<<endl;
